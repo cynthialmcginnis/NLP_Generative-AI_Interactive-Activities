@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Does This Technology Need Human Language?</title>
+<style>
+  :root{
+    --navy:#0f2747;
+    --blue:#1f5f99;
+    --gold:#f2b84b;
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --text:#172033;
+    --muted:#687386;
+    --border:#d7dfeb;
+    --good:#147a4b;
+    --bad:#b33a3a;
+    --left:#6c7480;
+    --right:#3567a9;
+    --challenge:#7b4da8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background:linear-gradient(180deg,#eef4fb 0%,var(--bg) 100%);
+    color:var(--text);
+  }
+  .wrap{
+    max-width:1100px;
+    margin:0 auto;
+    padding:28px 20px 50px;
+  }
+  .hero{
+    background:var(--navy);
+    color:white;
+    border-radius:22px;
+    padding:28px;
+    box-shadow:0 14px 36px rgba(15,39,71,.16);
+  }
+  .eyebrow{
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-weight:800;
+    font-size:.78rem;
+    color:#d6e7f8;
+  }
+  h1{
+    margin:8px 0 10px;
+    font-size:clamp(2rem,5vw,3.7rem);
+    line-height:1.02;
+  }
+  .hook{
+    font-size:clamp(1.1rem,2.4vw,1.45rem);
+    line-height:1.5;
+    max-width:880px;
+  }
+  .rule{
+    margin-top:18px;
+    background:rgba(255,255,255,.1);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:1.05rem;
+  }
+  .rule strong{color:#ffe1a4}
+
+  .directions{
+    margin:22px 0 14px;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .directions h2{margin:0;font-size:1.45rem}
+  .progress{
+    font-weight:800;
+    color:var(--blue);
+  }
+
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+  .legend div{
+    padding:12px 16px;
+    border-radius:12px;
+    font-weight:800;
+    text-align:center;
+    border:1px solid var(--border);
+    background:white;
+  }
+  .legend .no{border-left:8px solid var(--left)}
+  .legend .yes{border-right:8px solid var(--right)}
+
+  .activity{
+    display:grid;
+    gap:14px;
+  }
+  .item{
+    background:var(--card);
+    border:2px solid var(--border);
+    border-radius:18px;
+    padding:16px;
+    transition:.2s ease;
+  }
+  .item.correct{border-color:var(--good); box-shadow:0 0 0 3px rgba(20,122,75,.09)}
+  .item.incorrect{border-color:var(--bad); box-shadow:0 0 0 3px rgba(179,58,58,.08)}
+  .topline{
+    display:flex;
+    justify-content:space-between;
+    gap:14px;
+    align-items:flex-start;
+  }
+  .tech{
+    font-size:1.15rem;
+    font-weight:900;
+  }
+  .hint{
+    color:var(--muted);
+    font-size:.92rem;
+    margin-top:4px;
+    line-height:1.45;
+  }
+  .status{
+    min-width:145px;
+    text-align:right;
+    font-weight:900;
+    font-size:.9rem;
+    color:var(--muted);
+  }
+  .challenge{
+    display:inline-block;
+    margin-left:7px;
+    border:1px solid #d8c8e9;
+    color:var(--challenge);
+    background:#f7f1fc;
+    border-radius:999px;
+    padding:2px 7px;
+    font-size:.7rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    vertical-align:2px;
+  }
+
+  .slider-wrap{
+    position:relative;
+    margin-top:15px;
+    padding:4px 0 2px;
+  }
+  .track{
+    position:relative;
+    height:54px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#e6e8ec 0 48%, #f8f9fb 48% 52%, #dce8f6 52% 100%);
+    border:1px solid var(--border);
+    touch-action:none;
+    user-select:none;
+  }
+  .track::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:7px;
+    bottom:7px;
+    width:2px;
+    background:#b9c2cf;
+    transform:translateX(-1px);
+  }
+  .knob{
+    position:absolute;
+    top:6px;
+    left:50%;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    background:var(--gold);
+    border:4px solid white;
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+    transform:translateX(-50%);
+    cursor:grab;
+    touch-action:none;
+  }
+  .knob:active{cursor:grabbing}
+  .slider-labels{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:7px;
+    font-size:.82rem;
+    font-weight:800;
+  }
+  .slider-labels span:last-child{text-align:right;color:var(--blue)}
+  .explanation{
+    display:none;
+    margin-top:12px;
+    border-top:1px solid var(--border);
+    padding-top:10px;
+    line-height:1.48;
+  }
+  .item.checked .explanation{display:block}
+
+  .actions{
+    position:sticky;
+    bottom:12px;
+    margin-top:24px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    align-items:center;
+    justify-content:center;
+    background:rgba(244,247,251,.92);
+    backdrop-filter:blur(8px);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:12px;
+  }
+  button{
+    border:0;
+    border-radius:12px;
+    min-height:48px;
+    padding:0 20px;
+    font-size:1rem;
+    font-weight:900;
+    cursor:pointer;
+  }
+  #checkBtn{background:var(--navy);color:white}
+  #resetBtn,#reshuffleBtn{background:white;color:var(--navy);border:2px solid var(--navy)}
+  #score{
+    font-size:1.05rem;
+    font-weight:900;
+    min-width:200px;
+    text-align:center;
+  }
+  .note{
+    margin-top:18px;
+    color:var(--muted);
+    line-height:1.5;
+    background:white;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+  }
+
+  @media(max-width:640px){
+    .wrap{padding:14px 12px 34px}
+    .hero{padding:20px;border-radius:16px}
+    .legend{grid-template-columns:1fr}
+    .status{min-width:auto}
+    .topline{flex-direction:column}
+    .status{text-align:left}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">Natural Language Processing • Opening Activity</div>
+    <h1>Did you use language to interact with technology today?</h1>
+    <div class="hook">
+      Some technologies must process human words or speech to perform the task. Others can operate without language at all.
+    </div>
+    <div class="rule">
+      <strong>Your rule:</strong> For the <em>specific task described</em>, does the technology have to process human words or speech?
+    </div>
+  </section>
+
+  <div class="directions">
+    <h2>Slide each task left or right.</h2>
+    <div id="progress" class="progress">0 classified</div>
+  </div>
+
+  <div class="legend">
+    <div class="no">← DOES NOT NEED HUMAN LANGUAGE</div>
+    <div class="yes">USES HUMAN LANGUAGE →</div>
+  </div>
+
+  <main id="activity" class="activity"></main>
+
+  <div class="actions">
+    <button id="checkBtn">Check My Answers</button>
+    <button id="resetBtn">Reset Choices</button>
+    <button id="reshuffleBtn">Shuffle Again</button>
+    <div id="score" aria-live="polite"></div>
+  </div>
+
+  <div class="note">
+    <strong>Watch for the trap:</strong> Do not classify the device by its name. Classify the <em>task</em>. The same phone, car, camera, thermostat, or recommendation system may use language in one situation and not in another.
+  </div>
+</div>
+
+<script>
+const masterItems = [
+  {
+    name:"Voice assistant",
+    detail:"You say: “Set an alarm for 6:30 tomorrow morning.”",
+    answer:"yes",
+    explanation:"The system must process spoken language to determine what action you requested."
+  },
+  {
+    name:"Calculator",
+    detail:"You enter 27 × 14 using number and operation buttons.",
+    answer:"no",
+    explanation:"It operates on numbers and mathematical operators. Human language is not required."
+  },
+  {
+    name:"Photo search",
+    detail:"You type: “Show me pictures of dogs at the beach.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"The system must process the meaning of your language query before matching it with images. The output is visual, but language is part of the task."
+  },
+  {
+    name:"Face ID",
+    detail:"Your phone compares your face with its stored biometric representation.",
+    answer:"no",
+    explanation:"The task is visual pattern matching. Words are not needed."
+  },
+  {
+    name:"Smart thermostat",
+    detail:"It automatically turns on the air conditioner when the temperature reaches 78°F.",
+    answer:"no",
+    challenge:true,
+    explanation:"This version of the task uses sensor data and thresholds. It does not need human language."
+  },
+  {
+    name:"Smart thermostat",
+    detail:"You say: “Make it two degrees cooler.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"Same device, different task. Here it must process the meaning of a spoken command."
+  },
+  {
+    name:"Recommendation system",
+    detail:"A music app recommends songs based only on what you previously played and skipped.",
+    answer:"no",
+    challenge:true,
+    explanation:"A recommender can work from behavioral data alone. Language is not necessary in this scenario."
+  },
+  {
+    name:"Recommendation system",
+    detail:"You type: “Give me relaxing music for studying.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"Now the recommender must process a natural-language request before deciding what to recommend."
+  },
+  {
+    name:"Email spam filter",
+    detail:"It analyzes the words in an email subject and message body.",
+    answer:"yes",
+    explanation:"Text analysis is directly part of the classification task."
+  },
+  {
+    name:"Email security filter",
+    detail:"It blocks a message because the attached file contains known malware.",
+    answer:"no",
+    challenge:true,
+    explanation:"This decision can be made from the attachment's code or signature without understanding the email's language."
+  },
+  {
+    name:"Navigation app",
+    detail:"You tap a saved destination called “Home,” and GPS computes the route.",
+    answer:"no",
+    challenge:true,
+    explanation:"The routing task can be performed from coordinates and map data. The label 'Home' does not require the system to understand human language."
+  },
+  {
+    name:"Navigation app",
+    detail:"You say: “Find a coffee shop near the airport that's still open.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"The system must interpret the spoken request, including concepts such as 'near' and 'still open.'"
+  },
+  {
+    name:"Image generator",
+    detail:"You type: “Create a watercolor painting of a lighthouse during a storm.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"The image model generates pixels, but the system first has to process the language prompt that describes what you want."
+  },
+  {
+    name:"Image-to-image filter",
+    detail:"You upload a photo and press a button labeled 'Black & White.'",
+    answer:"no",
+    challenge:true,
+    explanation:"The image transformation can be triggered by a predefined control. It does not have to interpret a human-language request."
+  },
+  {
+    name:"Automatic translation app",
+    detail:"It converts a paragraph from English into Japanese.",
+    answer:"yes",
+    explanation:"Translation requires processing language and producing language."
+  },
+  {
+    name:"Barcode scanner",
+    detail:"It scans a UPC code to identify a product.",
+    answer:"no",
+    explanation:"A barcode is a machine-readable code. The scanner does not need to understand human words."
+  },
+  {
+    name:"Predictive-text keyboard",
+    detail:"It suggests the next word while you type a message.",
+    answer:"yes",
+    explanation:"The system models patterns in human language to predict likely words."
+  },
+  {
+    name:"Lane-keeping system",
+    detail:"A car uses camera images to keep itself centered between lane markings.",
+    answer:"no",
+    challenge:true,
+    explanation:"The task depends on visual and sensor data, not human language."
+  },
+  {
+    name:"Car voice controls",
+    detail:"You say: “Turn the fan down and call Jordan.”",
+    answer:"yes",
+    challenge:true,
+    explanation:"The car must interpret spoken language to determine two requested actions."
+  },
+  {
+    name:"Optical character recognition (OCR)",
+    detail:"A scanner turns a photographed restaurant receipt into editable text.",
+    answer:"yes",
+    challenge:true,
+    explanation:"OCR recognizes written characters and words from an image. It is working with human-written language, even though the input begins as pixels."
+  }
+];
+
+let items = [];
+
+const activity = document.getElementById("activity");
+const progress = document.getElementById("progress");
+const score = document.getElementById("score");
+
+function shuffle(arr){
+  const copy = [...arr];
+  for(let i=copy.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+
+function makeItem(item, index){
+  const el = document.createElement("section");
+  el.className = "item";
+  el.dataset.index = index;
+  el.dataset.choice = "";
+  el.innerHTML = `
+    <div class="topline">
+      <div>
+        <div class="tech">${index+1}. ${item.name}${item.challenge ? '<span class="challenge">Challenge</span>' : ''}</div>
+        <div class="hint">${item.detail}</div>
+      </div>
+      <div class="status">Not classified</div>
+    </div>
+    <div class="slider-wrap">
+      <div class="track" role="slider" tabindex="0"
+           aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0"
+           aria-label="${item.name}: decide whether the task uses human language">
+        <div class="knob"></div>
+      </div>
+      <div class="slider-labels">
+        <span>Does not need language</span>
+        <span>Uses human language</span>
+      </div>
+    </div>
+    <div class="explanation"></div>
+  `;
+
+  const track = el.querySelector(".track");
+  const knob = el.querySelector(".knob");
+  const status = el.querySelector(".status");
+
+  function setChoice(choice){
+    el.dataset.choice = choice;
+    el.classList.remove("correct","incorrect","checked");
+    if(choice === "no"){
+      knob.style.left = "8%";
+      status.textContent = "Does NOT need language";
+      status.style.color = "var(--left)";
+      track.setAttribute("aria-valuenow","-1");
+    } else if(choice === "yes"){
+      knob.style.left = "92%";
+      status.textContent = "Uses human language";
+      status.style.color = "var(--right)";
+      track.setAttribute("aria-valuenow","1");
+    } else {
+      knob.style.left = "50%";
+      status.textContent = "Not classified";
+      status.style.color = "var(--muted)";
+      track.setAttribute("aria-valuenow","0");
+    }
+    updateProgress();
+  }
+
+  function classifyFromX(clientX){
+    const rect = track.getBoundingClientRect();
+    const pos = (clientX - rect.left) / rect.width;
+    setChoice(pos < .5 ? "no" : "yes");
+  }
+
+  let dragging = false;
+  track.addEventListener("pointerdown", e => {
+    dragging = true;
+    track.setPointerCapture(e.pointerId);
+    classifyFromX(e.clientX);
+  });
+  track.addEventListener("pointermove", e => {
+    if(dragging) classifyFromX(e.clientX);
+  });
+  track.addEventListener("pointerup", () => dragging = false);
+  track.addEventListener("pointercancel", () => dragging = false);
+
+  track.addEventListener("keydown", e => {
+    if(e.key === "ArrowLeft"){
+      e.preventDefault(); setChoice("no");
+    } else if(e.key === "ArrowRight"){
+      e.preventDefault(); setChoice("yes");
+    } else if(e.key === "Home" || e.key === "0"){
+      e.preventDefault(); setChoice("");
+    }
+  });
+
+  el.setChoice = setChoice;
+  return el;
+}
+
+function render(shuffleFirst=true){
+  if(shuffleFirst) items = shuffle(masterItems);
+  activity.innerHTML = "";
+  items.forEach((item,i)=>activity.appendChild(makeItem(item,i)));
+  score.textContent = `Classify all ${items.length} tasks.`;
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = [...document.querySelectorAll(".item")].filter(el=>el.dataset.choice).length;
+  progress.textContent = `${done} of ${items.length} classified`;
+  if(done === items.length){
+    score.textContent = "Ready to check.";
+  } else if(!score.textContent.startsWith("Score:")){
+    score.textContent = `Classify all ${items.length} tasks.`;
+  }
+}
+
+document.getElementById("checkBtn").addEventListener("click", ()=>{
+  const els = [...document.querySelectorAll(".item")];
+  const unanswered = els.filter(el=>!el.dataset.choice);
+  if(unanswered.length){
+    score.textContent = `${unanswered.length} still need a choice.`;
+    unanswered[0].scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+  let correct = 0;
+  els.forEach(el=>{
+    const i = Number(el.dataset.index);
+    const item = items[i];
+    const isCorrect = el.dataset.choice === item.answer;
+    if(isCorrect) correct++;
+    el.classList.add("checked", isCorrect ? "correct" : "incorrect");
+    el.querySelector(".explanation").innerHTML =
+      `<strong>${isCorrect ? "Correct." : "Not quite."}</strong> ${item.explanation}`;
+  });
+  score.textContent = `Score: ${correct} / ${items.length}`;
+});
+
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.querySelectorAll(".item").forEach(el=>el.setChoice(""));
+  score.textContent = `Classify all ${items.length} tasks.`;
+});
+
+document.getElementById("reshuffleBtn").addEventListener("click", ()=>{
+  render(true);
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+
+render(true);
+</script>
+</body>
+</html>
