@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History of NLP: Could It Do That?</title>
+<style>
+  :root {
+    --navy: #003366; --gold: #F2A900; --light-blue: #F2F6FA;
+    --ink: #1A1A1A; --grey-border: #D7DEE6; --green: #2E7D32; --red: #B3261E;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--light-blue); color: var(--ink); margin: 0; padding: 0 0 60px 0; }
+  header { background: var(--navy); color: #fff; padding: 28px 24px 24px 24px; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 6px 0; font-size: 1.5rem; }
+  header p { margin: 0; color: #CFE0F0; font-size: 0.95rem; max-width: 780px; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 20px 0 20px; }
+  .question-box { background: #FFF8E8; border-left: 5px solid var(--gold); padding: 14px 18px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .tabs button { padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--navy); background: #fff; color: var(--navy); font-size: 0.85rem; font-weight: bold; cursor: pointer; }
+  .tabs button.active { background: var(--navy); color: #fff; }
+  .tabs button .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; background: var(--grey-border); }
+  .tabs button.done .dot { background: var(--gold); }
+  .era-header { background: #fff; border: 1px solid var(--grey-border); border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; }
+  .era-header .year { font-size: 0.85rem; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.03em; }
+  .era-header .title { font-size: 1.2rem; font-weight: bold; color: var(--navy); margin: 2px 0 6px 0; }
+  .era-header .desc { font-size: 0.92rem; color: #3A4550; }
+  .card { background: #fff; border: 2px solid var(--grey-border); border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; }
+  .card.correct { border-color: var(--green); background: #F2F9F1; }
+  .card.incorrect { border-color: var(--red); background: #FCF2F1; }
+  .card .statement { font-size: 1rem; font-weight: bold; margin-bottom: 12px; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row button { flex: 1; padding: 10px 8px; border-radius: 6px; border: 1.5px solid var(--navy); background: #fff; color: var(--navy); font-weight: bold; font-size: 0.9rem; cursor: pointer; }
+  .btn-row button:hover:not(:disabled) { background: var(--light-blue); }
+  .btn-row button:disabled { cursor: default; opacity: 0.45; }
+  .explanation { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--grey-border); font-size: 0.88rem; color: #3A4550; display: none; }
+  .verdict { font-weight: bold; display: block; margin-bottom: 4px; }
+  .verdict.correct-text { color: var(--green); }
+  .verdict.incorrect-text { color: var(--red); }
+  .nav-row { display: flex; justify-content: space-between; margin-top: 16px; }
+  .nav-row button { background: var(--navy); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; }
+  .nav-row button:hover { background: #002347; }
+  .nav-row button:disabled { background: #9AA6B2; cursor: default; }
+  footer { max-width: 900px; margin: 20px auto 0 auto; padding: 0 20px; font-size: 0.78rem; color: #7A8794; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>History of NLP: Could It Do That?</h1>
+  <p>Every era of NLP could do some things and not others. For each era, decide: could this system actually do the thing described, or not?</p>
+</header>
+
+<main>
+  <div class="question-box">
+    Pick an era below. For each statement, choose <strong>Could Do</strong> or <strong>Could Not Do</strong>, then read why.
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="era-header" id="eraHeader"></div>
+  <div id="statements"></div>
+  <div class="nav-row">
+    <button id="prevBtn">\u2190 Previous Era</button>
+    <button id="nextBtn">Next Era \u2192</button>
+  </div>
+</main>
+
+<footer>
+  AI disclosure: This activity was built with AI assistance (Claude, Anthropic).
+</footer>
+
+<script>
+  const ERAS = [
+    {
+      year: "1950s\u201360s", title: "Rules + Early Machine Translation",
+      desc: "Hand-written rules and dictionaries attempt to translate and process language.",
+      statements: [
+        { text: "Translate simple technical sentences using dictionaries and hand-written grammar rules.", answer: true, explanation: "This is exactly what the Georgetown-IBM demonstration did in 1954, on a narrow, prepared vocabulary." },
+        { text: "Understand slang or sentence patterns nobody had explicitly programmed it to handle.", answer: false, explanation: "Rule-based systems only work within the rules someone wrote. Unwritten patterns simply didn't exist for the system." },
+        { text: "Learn new patterns automatically by reading more text.", answer: false, explanation: "Nothing about this era learned from data. Every capability had to be hand-coded by a person." }
+      ]
+    },
+    {
+      year: "1966", title: "ELIZA",
+      desc: "Pattern matching mimics conversation without any real understanding.",
+      statements: [
+        { text: "Carry on a conversation that felt human by reflecting your words back as questions.", answer: true, explanation: "That's precisely ELIZA's trick: simple pattern matching that felt conversational to many users." },
+        { text: "Actually understand what you were talking about.", answer: false, explanation: "ELIZA had zero comprehension. It matched patterns in your sentence and rearranged them, nothing more." },
+        { text: "Answer a factual question it wasn't scripted to handle.", answer: false, explanation: "Outside its scripted patterns, ELIZA had nothing to fall back on." }
+      ]
+    },
+    {
+      year: "1990s", title: "Statistical NLP",
+      desc: "Systems learn word patterns and probabilities from large collections of real text.",
+      statements: [
+        { text: "Learn common word patterns automatically from large amounts of text.", answer: true, explanation: "This is the core shift of the era: probabilities learned from data instead of rules written by hand." },
+        { text: "Represent the meaning of a word as a position in mathematical space.", answer: false, explanation: "That idea, embeddings, didn't arrive until Word2Vec in 2013. Statistical NLP worked with counts and probabilities, not geometric meaning." },
+        { text: "Assign probabilities to which word is likely to come next.", answer: true, explanation: "Predicting likely next words from counted patterns is exactly what statistical language models did." }
+      ]
+    },
+    {
+      year: "2013", title: "Word2Vec",
+      desc: "Words become vectors, numbers positioned so related words land close together.",
+      statements: [
+        { text: "Represent words as vectors so that similar words land close together in space.", answer: true, explanation: "This is Word2Vec's core contribution: meaning as geometry, for the first time." },
+        { text: "Read an entire sentence at once and directly relate distant words to each other.", answer: false, explanation: "That's the transformer's contribution, four years later in 2017. Word2Vec produced word vectors, but didn't process whole sequences with attention." },
+        { text: "Recognize that \u201Cking\u201D and \u201Cqueen\u201D are more related than \u201Cking\u201D and \u201Ccar.\u201D", answer: true, explanation: "Exactly the kind of relationship Word2Vec's vector space captured automatically from usage patterns." }
+      ]
+    },
+    {
+      year: "2017", title: "The Transformer",
+      desc: "A new architecture models relationships across an entire sequence at once.",
+      statements: [
+        { text: "Process a whole sentence at once instead of reading it word by word in order.", answer: true, explanation: "That's the architectural breakthrough: parallel processing of the full sequence, not sequential reading." },
+        { text: "Relate two words directly no matter how far apart they are in a sentence.", answer: true, explanation: "This is what the attention mechanism specifically enables: any word can connect directly to any other word." },
+        { text: "Power a chatbot holding a fluent, open-ended conversation.", answer: false, explanation: "The architecture existed in 2017, mostly demonstrated on translation, but the large-scale pretrained models that made fluent open-ended chat possible came a year or more later." }
+      ]
+    },
+    {
+      year: "2018+", title: "Large Pretrained Language Models",
+      desc: "Transformer-based models trained at massive scale become broadly useful.",
+      statements: [
+        { text: "Generate a fluent, multi-paragraph response to an open-ended prompt.", answer: true, explanation: "This is exactly what large pretrained models, scaled up from the transformer architecture, made possible." },
+        { text: "Guarantee that everything it generates is factually correct.", answer: false, explanation: "Fluency was never a guarantee of truth. Large language models can generate confident, well-formed sentences that are simply wrong." },
+        { text: "Be pretrained once on general text, then adapted to many different tasks.", answer: true, explanation: "Pretrain once, fine-tune for many tasks, is the defining recipe of this era." }
+      ]
+    }
+  ];
+
+  let currentEra = 0;
+  const tabsDiv = document.getElementById('tabs');
+  const eraHeaderDiv = document.getElementById('eraHeader');
+  const statementsDiv = document.getElementById('statements');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  const doneEras = new Set();
+
+  function buildTabs() {
+    tabsDiv.innerHTML = '';
+    ERAS.forEach((era, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = era.year;
+      btn.className = (i === currentEra ? 'active' : '') + (doneEras.has(i) ? ' done' : '');
+      const dot = document.createElement('span');
+      dot.className = 'dot';
+      btn.appendChild(dot);
+      btn.addEventListener('click', () => { currentEra = i; render(); });
+      tabsDiv.appendChild(btn);
+    });
+  }
+
+  function render() {
+    buildTabs();
+    const era = ERAS[currentEra];
+    eraHeaderDiv.innerHTML = `
+      <div class="year">${era.year}</div>
+      <div class="title">${era.title}</div>
+      <div class="desc">${era.desc}</div>
+    `;
+    statementsDiv.innerHTML = '';
+    let answeredCount = 0;
+    era.statements.forEach(st => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="statement">${st.text}</div>
+        <div class="btn-row">
+          <button data-choice="true">Could Do</button>
+          <button data-choice="false">Could Not Do</button>
+        </div>
+        <div class="explanation"><span class="verdict"></span><span class="expl-text"></span></div>
+      `;
+      const buttons = card.querySelectorAll('.btn-row button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const choice = btn.getAttribute('data-choice') === 'true';
+          const correct = choice === st.answer;
+          buttons.forEach(b => b.disabled = true);
+          card.classList.add(correct ? 'correct' : 'incorrect');
+          const expl = card.querySelector('.explanation');
+          const verdict = card.querySelector('.verdict');
+          verdict.textContent = correct ? 'Correct.' : `Not quite \u2014 this era ${st.answer ? 'could' : 'could not'} do this.`;
+          verdict.className = 'verdict ' + (correct ? 'correct-text' : 'incorrect-text');
+          card.querySelector('.expl-text').textContent = st.explanation;
+          expl.style.display = 'block';
+          answeredCount++;
+          if (answeredCount === era.statements.length) {
+            doneEras.add(currentEra);
+            buildTabs();
+          }
+        });
+      });
+      statementsDiv.appendChild(card);
+    });
+    prevBtn.disabled = currentEra === 0;
+    nextBtn.disabled = currentEra === ERAS.length - 1;
+  }
+
+  prevBtn.addEventListener('click', () => { if (currentEra > 0) { currentEra--; render(); } });
+  nextBtn.addEventListener('click', () => { if (currentEra < ERAS.length - 1) { currentEra++; render(); } });
+
+  render();
+</script>
+
+</body>
+</html>

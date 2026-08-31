@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search Engine NLP Lab</title>
+<style>
+  :root {
+    --navy: #003366; --gold: #F2A900; --light-blue: #F2F6FA;
+    --ink: #1A1A1A; --grey-border: #D7DEE6; --green: #2E7D32;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--light-blue); color: var(--ink); margin: 0; padding: 0 0 60px 0; }
+  header { background: var(--navy); color: #fff; padding: 28px 24px 24px 24px; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 6px 0; font-size: 1.5rem; }
+  header p { margin: 0; color: #CFE0F0; font-size: 0.95rem; max-width: 800px; }
+  main { max-width: 940px; margin: 0 auto; padding: 24px 20px 0 20px; }
+  .question-box { background: #FFF8E8; border-left: 5px solid var(--gold); padding: 14px 18px; font-size: 0.98rem; border-radius: 4px; margin-bottom: 20px; }
+  .query-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .query-picker button { padding: 10px 16px; border-radius: 20px; border: 1.5px solid var(--navy); background: #fff; color: var(--navy); font-size: 0.9rem; font-weight: bold; cursor: pointer; }
+  .query-picker button:hover { background: var(--light-blue); }
+  .query-picker button.active { background: var(--navy); color: #fff; }
+  .predict-box { background: #fff; border: 1px solid var(--grey-border); border-radius: 8px; padding: 16px 18px; margin-bottom: 20px; }
+  .predict-box label { font-weight: bold; color: var(--navy); display: block; margin-bottom: 8px; }
+  .predict-box textarea { width: 100%; min-height: 60px; font-family: inherit; font-size: 0.95rem; padding: 10px; border: 1px solid var(--grey-border); border-radius: 6px; resize: vertical; }
+  .predict-box button { margin-top: 10px; background: var(--navy); color: #fff; border: none; padding: 9px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+  .predict-box button:hover { background: #002347; }
+  .region-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .region-row span.label { font-weight: bold; color: var(--navy); font-size: 0.9rem; }
+  .region-row button { padding: 7px 14px; border-radius: 16px; border: 1.5px solid #6B7A89; background: #fff; color: #3A4550; font-size: 0.85rem; cursor: pointer; }
+  .region-row button.active { background: #6B7A89; color: #fff; }
+  .pipeline { display: none; }
+  .pipeline.show { display: block; }
+  .stage { background: #fff; border: 1px solid var(--grey-border); border-radius: 8px; padding: 16px 18px; margin-bottom: 14px; }
+  .stage .stage-label { font-size: 0.78rem; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .stage .stage-title { font-size: 1.05rem; font-weight: bold; color: var(--navy); margin-bottom: 6px; }
+  .tokens { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .token { background: var(--navy); color: #fff; padding: 4px 10px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85rem; }
+  .expanded { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .expanded span { background: var(--light-blue); border: 1px dashed #9AA6B2; padding: 4px 10px; border-radius: 4px; font-size: 0.85rem; color: #3A4550; }
+  .interp-branch { border-left: 3px solid var(--gold); padding-left: 12px; margin: 10px 0; }
+  .interp-branch .branch-title { font-weight: bold; color: var(--navy); font-size: 0.92rem; }
+  .result-item { border-bottom: 1px solid var(--grey-border); padding: 10px 0; }
+  .result-item:last-child { border-bottom: none; }
+  .result-item .result-title { color: #1a0dab; font-size: 0.98rem; font-weight: bold; }
+  .result-item .result-why { font-size: 0.82rem; color: var(--green); margin-top: 3px; }
+  .region-note { font-size: 0.85rem; font-style: italic; color: #55606B; margin-top: 8px; }
+  .disclaimer { background: #FCF2F1; border-left: 5px solid #B3261E; padding: 12px 16px; font-size: 0.85rem; border-radius: 4px; margin-top: 20px; color: #3A4550; }
+  footer { max-width: 940px; margin: 20px auto 0 auto; padding: 0 20px; font-size: 0.78rem; color: #7A8794; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Search Engine NLP Lab</h1>
+  <p>This is a simulation with five prepared queries, not a real search engine. A tiny built-in list of results is not the same thing as understanding language in general; it's just enough to show you each stage clearly.</p>
+</header>
+
+<main>
+  <div class="question-box">
+    Choose a query below. Predict what it means (and whether any word is ambiguous) before you look at the pipeline. Then reveal the stages: query, process, interpret, retrieve, rank, serve.
+  </div>
+
+  <div class="query-picker" id="queryPicker"></div>
+
+  <div class="predict-box">
+    <label for="predictInput">Before you reveal the pipeline: what do you think this query means? Is any word ambiguous?</label>
+    <textarea id="predictInput" placeholder="Write your prediction here (not checked, just for your own notes)&hellip;"></textarea>
+    <button id="revealBtn">Reveal the Pipeline</button>
+  </div>
+
+  <div class="region-row">
+    <span class="label">Region / locale:</span>
+    <button class="region-btn active" data-region="none">No location</button>
+    <button class="region-btn" data-region="japan">Japan</button>
+    <button class="region-btn" data-region="us">United States (Hawai&#699;i)</button>
+  </div>
+
+  <div class="pipeline" id="pipeline"></div>
+
+  <div class="disclaimer">
+    Design note: if you want true free-text search, this activity would need a real search backend or a much more capable retrieval model. A small fixed list of results for five queries should not be presented as general language understanding, it's a simulation built to make each stage visible.
+  </div>
+</main>
+
+<footer>
+  AI disclosure: This activity was built with AI assistance (Claude, Anthropic).
+</footer>
+
+<script>
+  const QUERIES = {
+    "change laptop brightness": {
+      tokens: ["change", "laptop", "brightness"],
+      expanded: ["adjust", "dim", "increase/decrease", "screen", "display"],
+      interpretations: [
+        { title: "Most likely intent: how-to / troubleshooting", detail: "\u201Cchange\u201D is recognized as related to \u201Cadjust,\u201D so results about adjusting brightness are treated as relevant even though the exact word doesn't match." }
+      ],
+      regionSensitive: false,
+      results: {
+        none: [
+          { title: "How to Adjust Display Brightness on Windows Laptops", why: "Matches \u201Cadjust\u201D (related to \u201Cchange\u201D), \u201Cbrightness,\u201D and \u201Claptop\u201D directly." },
+          { title: "Laptop Screen Too Dim? Fix It Here", why: "Matches \u201Cbrightness\u201D and \u201Claptop\u201D through the related concept \u201Cdim.\u201D" },
+          { title: "MacBook Brightness Keyboard Shortcuts", why: "Matches \u201Cbrightness\u201D and a specific kind of laptop." },
+          { title: "Change Display Settings \u2014 Ubuntu Support", why: "Matches \u201Cchange\u201D directly plus \u201Cdisplay,\u201D related to \u201Cbrightness.\u201D" }
+        ]
+      }
+    },
+    "jaguar speed": {
+      tokens: ["jaguar", "speed"],
+      expanded: ["fast", "velocity", "performance", "top speed"],
+      interpretations: [
+        { title: "Interpretation A: Jaguar the animal", detail: "\u201Cspeed\u201D paired with an animal name suggests a question about running speed." },
+        { title: "Interpretation B: Jaguar the car brand", detail: "\u201Cspeed\u201D paired with a vehicle brand suggests a question about vehicle performance." }
+      ],
+      regionSensitive: false,
+      results: {
+        none: [
+          { title: "Jaguar (Animal): Speed and Hunting Behavior", why: "Matches the animal interpretation directly." },
+          { title: "2026 Jaguar F-TYPE: Top Speed and Performance Specs", why: "Matches the automobile interpretation directly." },
+          { title: "How Fast Can a Jaguar Run? \u2014 Wildlife Facts", why: "Matches the animal interpretation directly." },
+          { title: "Jaguar Cars: Official Models & Specs", why: "Matches the automobile interpretation directly." }
+        ]
+      },
+      note: "Without more context (past searches, other signals), a real system often shows a mix of both interpretations rather than guessing just one."
+    },
+    "pizza": {
+      tokens: ["pizza"],
+      expanded: ["restaurant", "recipe", "delivery", "nearby"],
+      interpretations: [
+        { title: "Most likely intent: local search", detail: "A single-word query like this is commonly treated as wanting nearby places, unless the system has reason to think otherwise." }
+      ],
+      regionSensitive: true,
+      results: {
+        none: [
+          { title: "Pizza: History, Styles, and How It's Made", why: "With no location available, the system falls back to general informational results." },
+          { title: "Best Homemade Pizza Dough Recipe", why: "General informational match on \u201Cpizza.\u201D" },
+          { title: "Pizza Nutrition Facts", why: "General informational match on \u201Cpizza.\u201D" }
+        ],
+        japan: [
+          { title: "Pizza-La \u2014 Iwakuni Delivery", why: "Location supplied as Japan, so nearby delivery options are prioritized over general information." },
+          { title: "Domino's Pizza \u2014 Yokota Air Base Area", why: "Local business match, ranked highly because location context was provided." },
+          { title: "Pizza: History, Styles, and How It's Made", why: "Still shown, but ranked lower than local options." }
+        ],
+        us: [
+          { title: "Local Pizza Co. \u2014 Honolulu, HI", why: "Location supplied as Hawai\u02BBi, so a nearby business is prioritized." },
+          { title: "Pizza Hut \u2014 Order Delivery Near You", why: "Local delivery option, ranked highly because location context was provided." },
+          { title: "Pizza: History, Styles, and How It's Made", why: "Still shown, but ranked lower than local options." }
+        ]
+      }
+    },
+    "visa requirements": {
+      tokens: ["visa", "requirements"],
+      expanded: ["entry rules", "documents needed", "eligibility"],
+      interpretations: [
+        { title: "Most likely intent: informational / travel planning", detail: "\u201Cvisa requirements\u201D alone is ambiguous about which two countries are involved; a real system relies on the user's own location or recent activity to guess." }
+      ],
+      regionSensitive: true,
+      results: {
+        none: [
+          { title: "Visa Requirements: General Overview by Country", why: "With no location, results stay general rather than naming a specific country pair." },
+          { title: "How Visa Requirements Work", why: "General informational match." }
+        ],
+        japan: [
+          { title: "U.S. Visa Requirements for Japanese Citizens \u2014 U.S. Embassy Tokyo", why: "Location supplied as Japan, so the system assumes the traveler's starting point and surfaces the relevant embassy page." },
+          { title: "Visa Requirements: General Overview by Country", why: "Still shown as a broader fallback." }
+        ],
+        us: [
+          { title: "Japan Visa Requirements for U.S. Citizens \u2014 Consulate-General of Japan", why: "Location supplied as the United States, so the system assumes that starting point instead." },
+          { title: "Visa Requirements: General Overview by Country", why: "Still shown as a broader fallback." }
+        ]
+      }
+    },
+    "jogging shoes": {
+      tokens: ["jogging", "shoes"],
+      expanded: ["running", "sneakers", "footwear"],
+      interpretations: [
+        { title: "Most likely intent: shopping", detail: "\u201Cjogging\u201D is treated as closely related to \u201Crunning,\u201D expanding the match beyond the exact word typed." }
+      ],
+      regionSensitive: true,
+      results: {
+        none: [
+          { title: "Best Running Shoes 2026: Reviews", why: "Matches \u201Cjogging\u201D through the related term \u201Crunning.\u201D" },
+          { title: "Nike Running Shoes \u2014 Official Store", why: "Matches \u201Cshoes\u201D and the running/jogging category." }
+        ],
+        japan: [
+          { title: "ABC-MART \u2014 Running Shoe Selection, Iwakuni", why: "Location supplied as Japan, so a nearby retailer is included alongside general shopping results." },
+          { title: "Best Running Shoes 2026: Reviews", why: "General shopping match, still shown." }
+        ],
+        us: [
+          { title: "Running Warehouse \u2014 Honolulu Store Locator", why: "Location supplied as Hawai\u02BBi, so a nearby retailer is included." },
+          { title: "Best Running Shoes 2026: Reviews", why: "General shopping match, still shown." }
+        ]
+      }
+    }
+  };
+
+  let currentQuery = null;
+  let currentRegion = "none";
+
+  const queryPicker = document.getElementById('queryPicker');
+  const pipeline = document.getElementById('pipeline');
+  const revealBtn = document.getElementById('revealBtn');
+
+  Object.keys(QUERIES).forEach(q => {
+    const btn = document.createElement('button');
+    btn.textContent = '\u201C' + q + '\u201D';
+    btn.addEventListener('click', () => {
+      currentQuery = q;
+      document.querySelectorAll('.query-picker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      pipeline.classList.remove('show');
+      document.getElementById('predictInput').value = '';
+    });
+    queryPicker.appendChild(btn);
+  });
+
+  document.querySelectorAll('.region-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentRegion = btn.getAttribute('data-region');
+      document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (pipeline.classList.contains('show')) render();
+    });
+  });
+
+  revealBtn.addEventListener('click', () => {
+    if (!currentQuery) { alert('Choose a query first.'); return; }
+    pipeline.classList.add('show');
+    render();
+  });
+
+  function render() {
+    const data = QUERIES[currentQuery];
+    const region = data.regionSensitive ? currentRegion : 'none';
+    const results = data.results[region] || data.results.none;
+
+    pipeline.innerHTML = `
+      <div class="stage">
+        <div class="stage-label">1 \u2022 Query</div>
+        <div class="stage-title">\u201C${currentQuery}\u201D</div>
+      </div>
+      <div class="stage">
+        <div class="stage-label">2 \u2022 Process</div>
+        <div class="stage-title">Tokens</div>
+        <div class="tokens">${data.tokens.map(t => `<span class="token">${t}</span>`).join('')}</div>
+        <div class="stage-title" style="margin-top:10px;">Expanded / related terms</div>
+        <div class="expanded">${data.expanded.map(t => `<span>${t}</span>`).join('')}</div>
+      </div>
+      <div class="stage">
+        <div class="stage-label">3 \u2022 Interpret</div>
+        ${data.interpretations.map(i => `<div class="interp-branch"><div class="branch-title">${i.title}</div><div>${i.detail}</div></div>`).join('')}
+        ${data.note ? `<div class="region-note">${data.note}</div>` : ''}
+      </div>
+      <div class="stage">
+        <div class="stage-label">4\u20136 \u2022 Retrieve, Rank &amp; Serve</div>
+        <div class="stage-title">Results${data.regionSensitive ? ` (region: ${region === 'none' ? 'none supplied' : region === 'japan' ? 'Japan' : 'United States'})` : ''}</div>
+        ${results.map(r => `<div class="result-item"><div class="result-title">${r.title}</div><div class="result-why">Why ranked here: ${r.why}</div></div>`).join('')}
+        ${!data.regionSensitive ? '<div class="region-note">Location does not change results for this query, try switching regions above and notice nothing changes here.</div>' : ''}
+      </div>
+    `;
+  }
+</script>
+
+</body>
+</html>

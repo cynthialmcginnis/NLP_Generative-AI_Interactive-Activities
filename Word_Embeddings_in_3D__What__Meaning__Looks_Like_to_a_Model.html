@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Embeddings in 3D: What "Meaning" Looks Like to a Model</title>
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<style>
+  :root {
+    --navy: #003366;
+    --gold: #F2A900;
+    --light-blue: #F2F6FA;
+    --ink: #1A1A1A;
+    --grey-border: #D7DEE6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--light-blue);
+    color: var(--ink);
+    margin: 0;
+    padding: 0 0 60px 0;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 24px 24px 24px;
+    border-bottom: 6px solid var(--gold);
+  }
+  header h1 { margin: 0 0 6px 0; font-size: 1.6rem; }
+  header p { margin: 0; color: #CFE0F0; font-size: 0.98rem; max-width: 800px; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 20px 0 20px; }
+  section.card {
+    background: #fff;
+    border: 1px solid var(--grey-border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+  }
+  section.card h2 {
+    margin-top: 0;
+    font-size: 1.15rem;
+    color: var(--navy);
+    border-bottom: 2px solid var(--gold);
+    display: inline-block;
+    padding-bottom: 4px;
+  }
+  .status { font-size: 0.92rem; color: #55606B; font-style: italic; }
+  #plot { width: 100%; height: 520px; }
+  .caption { font-size: 0.85rem; color: #55606B; margin-top: 6px; }
+  .question-box {
+    background: #FFF8E8;
+    border-left: 5px solid var(--gold);
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 4px;
+  }
+  input[type=text] {
+    width: 100%;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid var(--grey-border);
+    border-radius: 6px;
+  }
+  .btn-row { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  button {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button:hover { background: #002347; }
+  button.secondary { background: #6B7A89; }
+  button.secondary:hover { background: #55606B; }
+  button:disabled { background: #9AA6B2; cursor: not-allowed; }
+  #neighbors {
+    margin-top: 16px;
+  }
+  #neighbors table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+  #neighbors th, #neighbors td {
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--grey-border);
+  }
+  #neighbors th { color: var(--navy); }
+  .bar {
+    display: inline-block;
+    height: 10px;
+    background: var(--gold);
+    border-radius: 3px;
+    vertical-align: middle;
+  }
+  footer {
+    max-width: 920px;
+    margin: 10px auto 0 auto;
+    padding: 0 20px;
+    font-size: 0.78rem;
+    color: #7A8794;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Word Embeddings in 3D: What "Meaning" Looks Like to a Model</h1>
+  <p>A language model represents every word or phrase as a long list of numbers, a vector, computed by a real embedding model. Words used in similar contexts end up with similar vectors. Below, real embeddings for 24 words have been computed in your browser and compressed down to 3 dimensions so you can see, and rotate, that structure directly.</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>1. Here's the real data, unfiltered</h2>
+    <p class="status" id="loadStatus">Loading the real embedding model (small file, cached after first load)&hellip;</p>
+    <div id="plot"></div>
+    <p class="caption" id="plotCaption" style="display:none;">Drag to rotate, scroll to zoom. Each axis (PC1, PC2, PC3) is a mathematical direction found by Principal Component Analysis; it has no meaning on its own. What matters is <strong>distance</strong>: words the model treats as similar end up close together in this space, regardless of the category colors, which were added afterward only so you can see the clusters.</p>
+  </section>
+
+  <section class="card">
+    <h2>2. The question this raises</h2>
+    <div class="question-box">
+      The model was never told "dog" and "cat" are both animals, or that "happy" and "joyful" mean similar things. It only ever saw these words used in huge amounts of real text. Why would words with related meanings end up close together in this space purely from that? And what happens to a word that's ambiguous, like "bank" (a river bank vs. a financial bank)?
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Try it yourself</h2>
+    <input type="text" id="userInput" placeholder="Type a word or short phrase&hellip;" value="wolf">
+    <div class="btn-row">
+      <button id="addBtn" disabled>Loading model&hellip;</button>
+      <button id="resetBtn" class="secondary">Clear my words</button>
+    </div>
+    <div id="neighbors"></div>
+  </section>
+
+</main>
+
+<footer>
+  AI disclosure: This tool was built with AI assistance (Claude, Anthropic) and runs a real sentence-embedding model (all-MiniLM-L6-v2, via Transformers.js / Hugging Face) entirely in your browser, with a hand-implemented PCA to project the 384-dimensional vectors to 3D. No text you type is sent to a server. &mdash; ARIN 310, Fall 2026.
+</footer>
+
+<script type="module">
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+
+const WORD_SET = [
+  {word:'dog', category:'Animals'}, {word:'cat', category:'Animals'},
+  {word:'lion', category:'Animals'}, {word:'elephant', category:'Animals'},
+  {word:'happy', category:'Emotions'}, {word:'sad', category:'Emotions'},
+  {word:'angry', category:'Emotions'}, {word:'joyful', category:'Emotions'},
+  {word:'computer', category:'Technology'}, {word:'algorithm', category:'Technology'},
+  {word:'database', category:'Technology'}, {word:'software', category:'Technology'},
+  {word:'pizza', category:'Food'}, {word:'sushi', category:'Food'},
+  {word:'apple', category:'Food'}, {word:'bread', category:'Food'},
+  {word:'rain', category:'Weather'}, {word:'sunshine', category:'Weather'},
+  {word:'storm', category:'Weather'}, {word:'snow', category:'Weather'},
+  {word:'red', category:'Colors'}, {word:'blue', category:'Colors'},
+  {word:'green', category:'Colors'}, {word:'yellow', category:'Colors'}
+];
+
+const CATEGORY_COLORS = {
+  Animals: '#003366', Emotions: '#8B3A3A', Technology: '#2E7D6B',
+  Food: '#6B4E8E', Weather: '#3E5C76', Colors: '#B37B00'
+};
+
+const loadStatus = document.getElementById('loadStatus');
+const plotCaption = document.getElementById('plotCaption');
+const userInput = document.getElementById('userInput');
+const addBtn = document.getElementById('addBtn');
+const resetBtn = document.getElementById('resetBtn');
+const neighborsDiv = document.getElementById('neighbors');
+
+let extractor = null;
+let mean = null, loadings = null;
+let baseEmbeddings = [];   // {word, category, vec}
+let addedWords = [];       // {word, vec, coord}
+
+// ---------- linear algebra helpers ----------
+function dot(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+function norm(a) { return Math.sqrt(dot(a, a)); }
+function normalizeVec(a) { const n = norm(a); return n < 1e-12 ? a.map(() => 0) : a.map(x => x / n); }
+
+function matVecMul(M, v) {
+  const n = v.length, out = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) { let s = 0; const row = M[i]; for (let j = 0; j < n; j++) s += row[j] * v[j]; out[i] = s; }
+  return out;
+}
+
+function powerIteration(M, iterations = 300) {
+  const n = M.length;
+  let v = normalizeVec(Array.from({ length: n }, () => Math.random() - 0.5));
+  for (let it = 0; it < iterations; it++) {
+    const Mv = matVecMul(M, v);
+    const nrm = norm(Mv);
+    if (nrm < 1e-12) break;
+    v = Mv.map(x => x / nrm);
+  }
+  const Mv = matVecMul(M, v);
+  const eigenvalue = Math.max(dot(v, Mv), 0);
+  return { eigenvector: v, eigenvalue };
+}
+
+function topKEigenDeflate(Gin, k, iterations = 300) {
+  const n = Gin.length;
+  let G = Gin.map(row => row.slice());
+  const results = [];
+  for (let c = 0; c < k; c++) {
+    const { eigenvector, eigenvalue } = powerIteration(G, iterations);
+    results.push({ eigenvector, eigenvalue });
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) G[i][j] -= eigenvalue * eigenvector[i] * eigenvector[j];
+  }
+  return results;
+}
+
+// Dual PCA via the n x n Gram matrix (fast when n << d, as here: n~24, d=384)
+function computePCA(X, k = 3) {
+  const n = X.length, d = X[0].length;
+  const meanVec = new Array(d).fill(0);
+  for (let i = 0; i < n; i++) for (let j = 0; j < d; j++) meanVec[j] += X[i][j];
+  for (let j = 0; j < d; j++) meanVec[j] /= n;
+
+  const Xc = X.map(row => row.map((v, j) => v - meanVec[j]));
+
+  const G = Array.from({ length: n }, () => new Array(n).fill(0));
+  for (let i = 0; i < n; i++) for (let j = i; j < n; j++) {
+    let s = 0; for (let t = 0; t < d; t++) s += Xc[i][t] * Xc[j][t];
+    G[i][j] = s; G[j][i] = s;
+  }
+
+  const eig = topKEigenDeflate(G, k, 300);
+  const scores = Array.from({ length: n }, () => new Array(k).fill(0));
+  const loadingVecs = [];
+  for (let c = 0; c < k; c++) {
+    const { eigenvector, eigenvalue } = eig[c];
+    const sigma = Math.sqrt(Math.max(eigenvalue, 1e-12));
+    for (let i = 0; i < n; i++) scores[i][c] = eigenvector[i] * sigma;
+    const loading = new Array(d).fill(0);
+    for (let j = 0; j < d; j++) { let s = 0; for (let i = 0; i < n; i++) s += Xc[i][j] * eigenvector[i]; loading[j] = s / sigma; }
+    loadingVecs.push(loading);
+  }
+  return { mean: meanVec, scores, loadings: loadingVecs };
+}
+
+function projectNew(vec) {
+  const centered = vec.map((v, j) => v - mean[j]);
+  return loadings.map(loading => dot(centered, loading));
+}
+
+// ---------- embedding ----------
+async function embed(text) {
+  const output = await extractor(text, { pooling: 'mean', normalize: true });
+  return Array.from(output.data);
+}
+
+// ---------- plotting ----------
+function buildBaseTraces() {
+  const byCategory = {};
+  baseEmbeddings.forEach((e, i) => {
+    if (!byCategory[e.category]) byCategory[e.category] = { x: [], y: [], z: [], text: [] };
+    byCategory[e.category].x.push(e.coord[0]);
+    byCategory[e.category].y.push(e.coord[1]);
+    byCategory[e.category].z.push(e.coord[2]);
+    byCategory[e.category].text.push(e.word);
+  });
+  return Object.keys(byCategory).map(cat => ({
+    x: byCategory[cat].x, y: byCategory[cat].y, z: byCategory[cat].z,
+    text: byCategory[cat].text, mode: 'markers+text',
+    type: 'scatter3d', name: cat,
+    marker: { size: 5, color: CATEGORY_COLORS[cat] || '#888' },
+    textposition: 'top center', textfont: { size: 9, color: '#333' }
+  }));
+}
+
+function addedTrace() {
+  return {
+    x: addedWords.map(w => w.coord[0]),
+    y: addedWords.map(w => w.coord[1]),
+    z: addedWords.map(w => w.coord[2]),
+    text: addedWords.map(w => w.word),
+    mode: 'markers+text', type: 'scatter3d', name: 'Your words',
+    marker: { size: 7, color: '#F2A900', symbol: 'diamond', line: { color: '#003366', width: 1 } },
+    textposition: 'top center', textfont: { size: 10, color: '#003366' }
+  };
+}
+
+function redraw() {
+  const traces = buildBaseTraces().concat([addedTrace()]);
+  Plotly.react('plot', traces, {
+    margin: { l: 0, r: 0, t: 10, b: 0 },
+    scene: {
+      xaxis: { title: 'PC1' }, yaxis: { title: 'PC2' }, zaxis: { title: 'PC3' }
+    },
+    legend: { x: 0, y: 1 }
+  }, { responsive: true });
+}
+
+function renderNeighbors(word, vec) {
+  const candidates = baseEmbeddings.map(e => ({ label: e.word, vec: e.vec }))
+    .concat(addedWords.filter(w => w.word !== word).map(w => ({ label: w.word, vec: w.vec })));
+  const scored = candidates.map(c => ({ label: c.label, sim: dot(vec, c.vec) }))
+    .sort((a, b) => b.sim - a.sim).slice(0, 5);
+  let rows = scored.map(s => {
+    const pct = Math.max(0, Math.min(100, (s.sim + 1) / 2 * 100));
+    return `<tr><td>${s.label}</td><td>${s.sim.toFixed(3)}</td><td><span class="bar" style="width:${pct}px;"></span></td></tr>`;
+  }).join('');
+  neighborsDiv.innerHTML = `
+    <p style="margin-bottom:4px;"><strong>Nearest neighbors to "${word}"</strong> (cosine similarity, computed in full 384-dimensional space, not the 3D projection):</p>
+    <table><thead><tr><th>Word</th><th>Similarity</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function addWord() {
+  const text = userInput.value.trim();
+  if (!text) return;
+  addBtn.disabled = true;
+  addBtn.textContent = 'Computing embedding\u2026';
+  const vec = await embed(text);
+  const coord = projectNew(vec);
+  addedWords.push({ word: text, vec, coord });
+  redraw();
+  renderNeighbors(text, vec);
+  addBtn.disabled = false;
+  addBtn.textContent = 'Add to plot';
+}
+
+resetBtn.addEventListener('click', () => { addedWords = []; redraw(); neighborsDiv.innerHTML = ''; });
+addBtn.addEventListener('click', addWord);
+userInput.addEventListener('keydown', e => { if (e.key === 'Enter') addWord(); });
+
+(async function init() {
+  try {
+    extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    for (let i = 0; i < WORD_SET.length; i++) {
+      loadStatus.textContent = `Computing real embeddings\u2026 (${i + 1}/${WORD_SET.length})`;
+      const vec = await embed(WORD_SET[i].word);
+      baseEmbeddings.push({ word: WORD_SET[i].word, category: WORD_SET[i].category, vec });
+    }
+    loadStatus.textContent = 'Reducing 384 dimensions down to 3 with PCA\u2026';
+    const X = baseEmbeddings.map(e => e.vec);
+    const pca = computePCA(X, 3);
+    mean = pca.mean; loadings = pca.loadings;
+    baseEmbeddings.forEach((e, i) => { e.coord = pca.scores[i]; });
+
+    redraw();
+    loadStatus.style.display = 'none';
+    plotCaption.style.display = 'block';
+    addBtn.disabled = false;
+    addBtn.textContent = 'Add to plot';
+  } catch (err) {
+    loadStatus.textContent = 'Could not load the embedding model. Check your internet connection and reload the page.';
+    console.error(err);
+  }
+})();
+</script>
+
+</body>
+</html>

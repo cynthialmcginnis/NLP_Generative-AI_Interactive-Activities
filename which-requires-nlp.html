@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Which Requires NLP?</title>
+<style>
+  :root {
+    --navy: #003366;
+    --gold: #F2A900;
+    --light-blue: #F2F6FA;
+    --ink: #1A1A1A;
+    --grey-border: #D7DEE6;
+    --green: #2E7D32;
+    --red: #B3261E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--light-blue);
+    color: var(--ink);
+    margin: 0;
+    padding: 0 0 60px 0;
+  }
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 28px 24px 24px 24px;
+    border-bottom: 6px solid var(--gold);
+  }
+  header h1 { margin: 0 0 6px 0; font-size: 1.6rem; }
+  header p { margin: 0; color: #CFE0F0; font-size: 0.98rem; max-width: 780px; }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 20px 0 20px; }
+  .question-box {
+    background: #FFF8E8;
+    border-left: 5px solid var(--gold);
+    padding: 14px 18px;
+    font-size: 1rem;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--grey-border);
+    border-radius: 8px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+  }
+  .score-bar b { color: var(--navy); font-size: 1.1rem; }
+  button.reset {
+    background: #6B7A89;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.88rem;
+  }
+  button.reset:hover { background: #55606B; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: #fff;
+    border: 2px solid var(--grey-border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    transition: border-color 0.2s;
+  }
+  .card.correct { border-color: var(--green); background: #F2F9F1; }
+  .card.incorrect { border-color: var(--red); background: #FCF2F1; }
+  .card p.prompt { margin: 0 0 12px 0; font-size: 0.98rem; font-weight: bold; color: var(--ink); }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row button {
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: 6px;
+    border: 1.5px solid var(--navy);
+    background: #fff;
+    color: var(--navy);
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-row button:hover:not(:disabled) { background: var(--light-blue); }
+  .btn-row button:disabled { cursor: default; opacity: 0.4; }
+  .explanation {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--grey-border);
+    font-size: 0.88rem;
+    color: #3A4550;
+    display: none;
+  }
+  .verdict {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .verdict.correct-text { color: var(--green); }
+  .verdict.incorrect-text { color: var(--red); }
+  footer {
+    max-width: 960px;
+    margin: 20px auto 0 auto;
+    padding: 0 20px;
+    font-size: 0.78rem;
+    color: #7A8794;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Which Requires NLP?</h1>
+  <p>Not every AI system processes language, even when it feels intelligent. For each example below, decide: does the computer have to understand or generate human language to do this job?</p>
+</header>
+
+<main>
+  <div class="question-box">
+    Click <strong>Requires NLP</strong> or <strong>Not NLP</strong> for each card below. You'll see immediately whether you're right, and why.
+  </div>
+
+  <div class="score-bar">
+    <div>Score: <b id="score">0</b> / <span id="total">0</span> answered</div>
+    <button class="reset" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>
+  AI disclosure: This activity was built with AI assistance (Claude, Anthropic). &mdash; ARIN 310, Fall 2026.
+</footer>
+
+<script>
+  const ITEMS = [
+    {
+      prompt: "Autocorrect fixing a typo as you type",
+      answer: true,
+      explanation: "The system has to look at the letters you typed, compare them to likely words, and pick the one you probably meant. That's working with language."
+    },
+    {
+      prompt: "A spam filter deciding an email is junk",
+      answer: true,
+      explanation: "It reads the words in the subject and body to judge intent, no different in kind from the sentiment classifier you tried earlier in this unit."
+    },
+    {
+      prompt: 'A voice assistant setting an alarm when you say "set an alarm for 7 AM"',
+      answer: true,
+      explanation: "Turning spoken words into an action requires figuring out what you meant, not just what you said. That's language understanding."
+    },
+    {
+      prompt: "Netflix recommending a show based on what you've watched",
+      answer: false,
+      explanation: "This is a recommender system working off your viewing behavior, patterns in what you clicked and finished, not the words in a title or review."
+    },
+    {
+      prompt: "Google Maps calculating the fastest driving route",
+      answer: false,
+      explanation: "This is graph search over roads and traffic data. No language is involved in figuring out the route itself."
+    },
+    {
+      prompt: "Face ID unlocking your phone",
+      answer: false,
+      explanation: "This is computer vision, matching a face to a stored pattern. There's no text or speech involved at all."
+    },
+    {
+      prompt: "A chatbot answering your question in a support chat window",
+      answer: true,
+      explanation: "It has to parse what you typed and generate a reply in fluent language. This is NLP doing both understanding and generation."
+    },
+    {
+      prompt: "Software labeling product reviews as positive or negative",
+      answer: true,
+      explanation: "This is sentiment analysis, a classic NLP task: reading text and classifying it by meaning."
+    },
+    {
+      prompt: "A spreadsheet formula totaling a column of numbers",
+      answer: false,
+      explanation: "This is arithmetic on numbers. No language is being read or produced, no matter how it's phrased."
+    },
+    {
+      prompt: "Scanning a handwritten note and turning it into typed text (optical character recognition)",
+      answer: false,
+      explanation: "This is a trap worth noticing: recognizing the shapes of letters on a page is computer vision. NLP only starts once you already have text and need to work out what it means."
+    },
+    {
+      prompt: "Translating a sentence from Spanish to English",
+      answer: true,
+      explanation: "Machine translation is one of the original NLP tasks: understanding meaning in one language and generating it in another."
+    }
+  ];
+
+  const grid = document.getElementById('grid');
+  const scoreEl = document.getElementById('score');
+  const totalEl = document.getElementById('total');
+  let score = 0, answered = 0;
+
+  function build() {
+    grid.innerHTML = '';
+    score = 0; answered = 0;
+    scoreEl.textContent = '0';
+    totalEl.textContent = ITEMS.length;
+
+    ITEMS.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <p class="prompt">${item.prompt}</p>
+        <div class="btn-row">
+          <button data-choice="true">Requires NLP</button>
+          <button data-choice="false">Not NLP</button>
+        </div>
+        <div class="explanation">
+          <span class="verdict"></span>
+          <span class="expl-text"></span>
+        </div>
+      `;
+      const buttons = card.querySelectorAll('.btn-row button');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const choice = btn.getAttribute('data-choice') === 'true';
+          const correct = choice === item.answer;
+          buttons.forEach(b => b.disabled = true);
+          card.classList.add(correct ? 'correct' : 'incorrect');
+          const expl = card.querySelector('.explanation');
+          const verdict = card.querySelector('.verdict');
+          const explText = card.querySelector('.expl-text');
+          verdict.textContent = correct ? 'Correct.' : `Not quite \u2014 this ${item.answer ? 'does' : "doesn't"} require NLP.`;
+          verdict.className = 'verdict ' + (correct ? 'correct-text' : 'incorrect-text');
+          explText.textContent = item.explanation;
+          expl.style.display = 'block';
+          if (correct) score++;
+          answered++;
+          scoreEl.textContent = score;
+        });
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', build);
+  build();
+</script>
+
+</body>
+</html>

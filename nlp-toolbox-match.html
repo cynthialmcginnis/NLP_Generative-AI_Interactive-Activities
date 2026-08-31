@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NLP Is a Toolbox: Match the Technology</title>
+<style>
+  :root {
+    --navy: #003366; --gold: #F2A900; --light-blue: #F2F6FA;
+    --ink: #1A1A1A; --grey-border: #D7DEE6; --green: #2E7D32; --red: #B3261E;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--light-blue); color: var(--ink); margin: 0; padding: 0 0 60px 0; }
+  header { background: var(--navy); color: #fff; padding: 28px 24px 24px 24px; border-bottom: 6px solid var(--gold); }
+  header h1 { margin: 0 0 6px 0; font-size: 1.5rem; }
+  header p { margin: 0; color: #CFE0F0; font-size: 0.95rem; max-width: 780px; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 20px 0 20px; }
+  .question-box { background: #FFF8E8; border-left: 5px solid var(--gold); padding: 14px 18px; font-size: 1rem; border-radius: 4px; margin-bottom: 20px; }
+  .score-bar { display: flex; justify-content: space-between; align-items: center; background: #fff; border: 1px solid var(--grey-border); border-radius: 8px; padding: 12px 18px; margin-bottom: 20px; font-size: 0.95rem; }
+  .score-bar b { color: var(--navy); font-size: 1.1rem; }
+  button.reset { background: #6B7A89; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.88rem; }
+  button.reset:hover { background: #55606B; }
+  .card { background: #fff; border: 2px solid var(--grey-border); border-radius: 8px; padding: 16px 18px; margin-bottom: 16px; transition: border-color 0.2s; }
+  .card.correct { border-color: var(--green); background: #F2F9F1; }
+  .card.incorrect { border-color: var(--red); background: #FCF2F1; }
+  .card .task { font-size: 1.02rem; font-weight: bold; color: var(--navy); margin-bottom: 4px; }
+  .card .what { font-size: 0.88rem; color: #55606B; margin-bottom: 12px; }
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .options button { padding: 9px 10px; border-radius: 6px; border: 1.5px solid var(--navy); background: #fff; color: var(--navy); font-size: 0.88rem; cursor: pointer; text-align: left; }
+  .options button:hover:not(:disabled) { background: var(--light-blue); }
+  .options button:disabled { cursor: default; opacity: 0.55; }
+  .options button.chosen-correct { background: var(--green); color: #fff; border-color: var(--green); opacity: 1; }
+  .options button.chosen-incorrect { background: var(--red); color: #fff; border-color: var(--red); opacity: 1; }
+  .options button.reveal-correct { border-color: var(--green); border-width: 2px; opacity: 1; }
+  .explanation { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--grey-border); font-size: 0.88rem; color: #3A4550; display: none; }
+  footer { max-width: 900px; margin: 20px auto 0 auto; padding: 0 20px; font-size: 0.78rem; color: #7A8794; }
+  @media (max-width: 560px) { .options { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NLP Is a Toolbox: Match the Technology</h1>
+  <p>NLP isn't an app. It's a set of tasks that real apps use when they need to work with human language. For each task below, pick the technology that's actually doing that job.</p>
+</header>
+
+<main>
+  <div class="question-box">
+    For each NLP task, choose the real-world technology that performs it. You'll see immediately whether you're right, and why the other options belong to a different task.
+  </div>
+
+  <div class="score-bar">
+    <div>Score: <b id="score">0</b> / <span id="total">0</span> answered</div>
+    <button class="reset" id="resetBtn">Reset</button>
+  </div>
+
+  <div id="grid"></div>
+</main>
+
+<footer>
+  AI disclosure: This activity was built with AI assistance (Claude, Anthropic).
+</footer>
+
+<script>
+  const TASKS = [
+    {
+      task: "Text classification",
+      what: "Assign a label to a piece of text.",
+      correct: "Gmail's spam filter, sorting incoming mail into inbox or spam",
+      explanation: "Gmail reads the message and assigns it a label: spam or not spam. That's classification: picking the best category for a piece of text."
+    },
+    {
+      task: "Information extraction",
+      what: "Pull structured facts out of unstructured text.",
+      correct: "Google Calendar creating an event from a flight confirmation email",
+      explanation: "Calendar has to find the date, time, and flight number buried in an email's paragraphs and pull them out as structured fields. That's extraction, not classification."
+    },
+    {
+      task: "Search & retrieval",
+      what: "Find information that matches the meaning of a query.",
+      correct: "Google Search returning pages relevant to what you typed",
+      explanation: "Search has to match your query's meaning against millions of documents and retrieve the closest ones, even when the wording doesn't match exactly."
+    },
+    {
+      task: "Machine translation",
+      what: "Convert meaning from one language into another.",
+      correct: "Google Translate converting a menu from Japanese to English",
+      explanation: "Translation has to preserve meaning across languages, not just swap words one-for-one."
+    },
+    {
+      task: "Summarization",
+      what: "Condense longer language into something shorter.",
+      correct: "Otter.ai producing a short summary of an hour-long meeting recording",
+      explanation: "Summarization compresses a long input down to the key points, a different job than translating or classifying it."
+    },
+    {
+      task: "Question answering",
+      what: "Return a direct answer pulled from language or context.",
+      correct: "Siri answering \u201CWhat's the capital of France?\u201D",
+      explanation: "Question answering returns a specific answer, not a label, not a summary, not a translation."
+    },
+    {
+      task: "Language generation",
+      what: "Produce new language that didn't exist before.",
+      correct: "Gmail's Smart Compose suggesting the rest of your sentence",
+      explanation: "Generation creates new text. Smart Compose isn't retrieving or labeling anything, it's producing new words that weren't there before."
+    },
+    {
+      task: "Intent detection",
+      what: "Determine what action the user actually wants.",
+      correct: "Alexa turning \u201Cset an alarm for 7\u201D into an actual alarm",
+      explanation: "Intent detection maps your words onto an action the system can execute, SET_ALARM plus a time, not just a label or a translation."
+    }
+  ];
+
+  // Build a shuffled distractor pool from all "correct" answers
+  const ALL_ANSWERS = TASKS.map(t => t.correct);
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildOptionsFor(task) {
+    const distractors = shuffle(ALL_ANSWERS.filter(a => a !== task.correct)).slice(0, 3);
+    return shuffle([task.correct, ...distractors]);
+  }
+
+  const grid = document.getElementById('grid');
+  const scoreEl = document.getElementById('score');
+  const totalEl = document.getElementById('total');
+  let score = 0;
+
+  function build() {
+    grid.innerHTML = '';
+    score = 0;
+    scoreEl.textContent = '0';
+    totalEl.textContent = TASKS.length;
+
+    TASKS.forEach(task => {
+      const options = buildOptionsFor(task);
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="task">${task.task}</div>
+        <div class="what">${task.what}</div>
+        <div class="options"></div>
+        <div class="explanation"><span></span></div>
+      `;
+      const optDiv = card.querySelector('.options');
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          const buttons = optDiv.querySelectorAll('button');
+          const correct = opt === task.correct;
+          buttons.forEach(b => {
+            b.disabled = true;
+            if (b.textContent === task.correct) b.classList.add('reveal-correct');
+          });
+          btn.classList.remove('reveal-correct');
+          btn.classList.add(correct ? 'chosen-correct' : 'chosen-incorrect');
+          card.classList.add(correct ? 'correct' : 'incorrect');
+          const expl = card.querySelector('.explanation');
+          expl.querySelector('span').textContent = task.explanation;
+          expl.style.display = 'block';
+          if (correct) score++;
+          scoreEl.textContent = score;
+        });
+        optDiv.appendChild(btn);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('resetBtn').addEventListener('click', build);
+  build();
+</script>
+
+</body>
+</html>
