@@ -15,31 +15,31 @@
   header .eyebrow { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.8rem; color: var(--gold); font-weight: bold; margin: 0 0 8px 0; }
   header h1 { margin: 0 0 8px 0; font-size: 1.7rem; }
   header p { margin: 0; color: #CFE0F0; font-size: 0.98rem; max-width: 760px; }
-  main { max-width: 920px; margin: 0 auto; padding: 28px 20px 0 20px; }
-  .part-label { font-size: 0.8rem; font-weight: bold; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; margin: 30px 0 4px 0; }
-  .part-label:first-child { margin-top: 0; }
-  h2.part-title { color: var(--navy); font-size: 1.15rem; margin: 0 0 14px 0; border-bottom: 2px solid var(--gold); padding-bottom: 6px; }
-  .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 8px; }
-  @media (max-width: 640px) { .card-grid { grid-template-columns: 1fr; } }
+  main { max-width: 700px; margin: 0 auto; padding: 28px 20px 0 20px; }
+  .order-note { font-size: 0.85rem; color: #55606B; margin-bottom: 22px; }
   .card {
     background: #fff; border: 1px solid var(--grey-border); border-left: 4px solid var(--gold);
-    border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column;
+    border-radius: 8px; padding: 18px 20px; margin-bottom: 16px; position: relative;
   }
-  .card h3 { margin: 0 0 6px 0; font-size: 1.02rem; color: var(--navy); }
-  .card p { margin: 0 0 14px 0; font-size: 0.88rem; color: #3A4550; flex-grow: 1; }
+  .card .step-num {
+    position: absolute; top: -12px; left: -12px; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--navy); color: #fff; font-weight: bold; font-size: 0.9rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .card h3 { margin: 4px 0 6px 0; font-size: 1.05rem; color: var(--navy); }
+  .card p { margin: 0 0 14px 0; font-size: 0.9rem; color: #3A4550; }
   .card a.open-link {
-    display: inline-block; align-self: flex-start; background: var(--navy); color: #fff;
-    text-decoration: none; padding: 8px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: bold;
+    display: inline-block; background: var(--navy); color: #fff;
+    text-decoration: none; padding: 9px 18px; border-radius: 6px; font-size: 0.87rem; font-weight: bold;
   }
   .card a.open-link:hover { background: #002347; }
   .card .file-note { font-size: 0.72rem; color: #7A8794; margin-top: 8px; font-style: italic; }
-  .card.external { border-left-color: #6B7A89; }
   .card.external .file-note { color: #B37B00; }
-  .note-box {
-    background: #FFF8E8; border-left: 5px solid var(--gold); padding: 12px 16px;
-    font-size: 0.85rem; border-radius: 4px; margin: 10px 0 26px 0; color: #3A4550;
+  .same-model-note {
+    background: #FFF8E8; border-left: 5px solid var(--gold); padding: 10px 14px;
+    font-size: 0.82rem; border-radius: 4px; margin: -6px 0 16px 0; color: #3A4550;
   }
-  footer { max-width: 920px; margin: 30px auto 0 auto; padding: 0 20px; font-size: 0.78rem; color: #7A8794; }
+  footer { max-width: 700px; margin: 30px auto 0 auto; padding: 0 20px; font-size: 0.78rem; color: #7A8794; }
 </style>
 </head>
 <body>
@@ -47,73 +47,76 @@
 <header>
   <p class="eyebrow">Glassbox Learning</p>
   <h1>NLP &amp; Generative AI: Interactive Activities</h1>
-  <p>Every hands-on activity referenced in the "From Words to Worlds" flipbook, in one place. Each card opens a self-contained activity; use the button to launch it, then return to this page or the flipbook to continue.</p>
+  <p>Every hands-on activity referenced in the "From Words to Worlds" flipbook, in the same order they appear there.</p>
 </header>
 
 <main>
 
-  <div class="part-label">Opening</div>
-  <h2 class="part-title">Before the Definition</h2>
-  <div class="card-grid">
-    <div class="card">
-      <h3>Did You Use Language to Interact With Technology Today?</h3>
-      <p>Slide each of 20 technologies toward "uses human language" or "does not need language." A few are tagged CHALLENGE for genuinely ambiguous cases. Check answers, reset, or shuffle for a fresh order.</p>
-      <a class="open-link" href="nlp_human_language_sort_activity_challenge.html">Open Activity &rarr;</a>
-      <div class="file-note">File: nlp_human_language_sort_activity_challenge.html</div>
-    </div>
-    <div class="card">
-      <h3>Which Requires NLP?</h3>
-      <p>A shorter follow-up check: eleven examples, click-to-sort with instant feedback. Good as a later-class reinforcement after the fuller sort activity above.</p>
-      <a class="open-link" href="which-requires-nlp.html">Open Activity &rarr;</a>
-      <div class="file-note">File: which-requires-nlp.html</div>
-    </div>
+  <p class="order-note">These are numbered to match the flipbook. Work through them in order, alongside the book, or use this page as a standalone activity list.</p>
+
+  <div class="card">
+    <span class="step-num">1</span>
+    <h3>Did You Use Language to Interact With Technology Today?</h3>
+    <p>Opening activity. Drag or click each of 20 tasks toward "uses human language" or "does not need language." Several devices, like the thermostat and navigation app, appear twice with different task framings, since the same device can go either way depending on what it's actually being asked to do.</p>
+    <a class="open-link" href="nlp_human_language_sort_activity_challenge.html">Open Activity &rarr;</a>
+    <div class="file-note">File: nlp_human_language_sort_activity_challenge.html</div>
   </div>
 
-  <div class="part-label">Part I</div>
-  <h2 class="part-title">Natural Language Processing</h2>
-  <div class="card-grid">
-    <div class="card">
-      <h3>NLP Toolbox: Match the Technology</h3>
-      <p>Match each NLP task (classification, extraction, translation, and more) to the real technology that performs it.</p>
-      <a class="open-link" href="nlp-toolbox-match.html">Open Activity &rarr;</a>
-      <div class="file-note">File: nlp-toolbox-match.html</div>
-    </div>
-    <div class="card">
-      <h3>History of NLP: Could It Do That?</h3>
-      <p>Step through six eras of NLP and judge whether a specific capability was possible yet.</p>
-      <a class="open-link" href="history-eras-activity.html">Open Activity &rarr;</a>
-      <div class="file-note">File: history-eras-activity.html</div>
-    </div>
-    <div class="card">
-      <h3>Search Engine NLP Lab</h3>
-      <p>Pick a query, predict its meaning, then reveal the full pipeline: tokens, expanded terms, interpretation, and region-sensitive results.</p>
-      <a class="open-link" href="search-engine-nlp-lab.html">Open Activity &rarr;</a>
-      <div class="file-note">File: search-engine-nlp-lab.html</div>
-    </div>
-    <div class="card">
-      <h3>Tokenization Demo</h3>
-      <p>Type any sentence and watch a real GPT-2 tokenizer break it into pieces, live, in the browser.</p>
-      <a class="open-link" href="tokenization-demo.html">Open Activity &rarr;</a>
-      <div class="file-note">File: tokenization-demo.html</div>
-    </div>
-    <div class="card">
-      <h3>Word Embeddings in 3D</h3>
-      <p>Rotate a real 3D map of word meaning built from an actual embedding model, then add your own word.</p>
-      <a class="open-link" href="Word_Embeddings_in_3D__What__Meaning__Looks_Like_to_a_Model.html">Open Activity &rarr;</a>
-      <div class="file-note">File: Word_Embeddings_in_3D__What__Meaning__Looks_Like_to_a_Model.html</div>
-    </div>
-    <div class="card">
-      <h3>NLP Classification Demo</h3>
-      <p>A real sentiment classifier. Enter text, predict the label, then compare.</p>
-      <a class="open-link" href="https://cynthialmcginnis.github.io/NLP-Classification/">Open Activity &rarr;</a>
-      <div class="file-note">Hosted separately &mdash; not part of this repository</div>
-    </div>
-    <div class="card">
-      <h3>Break a Real NLP Model</h3>
-      <p>Challenge the same sentiment classifier with sarcasm, slang, and mixed sentiment to see where it fails.</p>
-      <a class="open-link" href="Unit_3__Break_a_Real_NLP_Model.html">Open Activity &rarr;</a>
-      <div class="file-note">File: Unit_3__Break_a_Real_NLP_Model.html</div>
-    </div>
+  <div class="card">
+    <span class="step-num">2</span>
+    <h3>NLP Toolbox: Match the Technology</h3>
+    <p>Match each NLP task (classification, extraction, translation, and more) to the real technology that performs it.</p>
+    <a class="open-link" href="nlp-toolbox-match.html">Open Activity &rarr;</a>
+    <div class="file-note">File: nlp-toolbox-match.html</div>
+  </div>
+
+  <div class="card">
+    <span class="step-num">3</span>
+    <h3>History of NLP: Could It Do That?</h3>
+    <p>Step through six eras of NLP and judge whether a specific capability was possible yet.</p>
+    <a class="open-link" href="history-eras-activity.html">Open Activity &rarr;</a>
+    <div class="file-note">File: history-eras-activity.html</div>
+  </div>
+
+  <div class="card">
+    <span class="step-num">4</span>
+    <h3>Search Engine NLP Lab</h3>
+    <p>Pick a query, predict its meaning, then reveal the full pipeline: tokens, expanded terms, interpretation, and region-sensitive results.</p>
+    <a class="open-link" href="search-engine-nlp-lab.html">Open Activity &rarr;</a>
+    <div class="file-note">File: search-engine-nlp-lab.html</div>
+  </div>
+
+  <div class="card">
+    <span class="step-num">5</span>
+    <h3>Tokenization Demo</h3>
+    <p>Type any sentence and watch a real GPT-2 tokenizer break it into pieces, live, in the browser.</p>
+    <a class="open-link" href="tokenization-demo.html">Open Activity &rarr;</a>
+    <div class="file-note">File: tokenization-demo.html</div>
+  </div>
+
+  <div class="card">
+    <span class="step-num">6</span>
+    <h3>Word Embeddings in 3D</h3>
+    <p>Rotate a real 3D map of word meaning built from an actual embedding model, then add your own word.</p>
+    <a class="open-link" href="Word_Embeddings_in_3D__What__Meaning__Looks_Like_to_a_Model.html">Open Activity &rarr;</a>
+    <div class="file-note">File: Word_Embeddings_in_3D__What__Meaning__Looks_Like_to_a_Model.html</div>
+  </div>
+
+  <div class="card external">
+    <span class="step-num">7</span>
+    <h3>NLP Classification Demo</h3>
+    <p>A real sentiment classifier. Enter text, predict the label, then compare.</p>
+    <a class="open-link" href="https://cynthialmcginnis.github.io/NLP-Classification/">Open Activity &rarr;</a>
+    <div class="file-note">Hosted separately &mdash; not part of this repository</div>
+  </div>
+
+  <div class="card">
+    <span class="step-num">8</span>
+    <h3>Break a Real NLP Model</h3>
+    <p>The same sentiment classifier from step 7, now challenged with sarcasm, slang, and mixed sentiment to see where it fails.</p>
+    <div class="same-model-note">Steps 7 and 8 intentionally run the identical model. Step 7 is "get a feel for how it works," step 8 is "now try to break it."</div>
+    <a class="open-link" href="Unit_3__Break_a_Real_NLP_Model.html">Open Activity &rarr;</a>
+    <div class="file-note">File: Unit_3__Break_a_Real_NLP_Model.html</div>
   </div>
 
 </main>
